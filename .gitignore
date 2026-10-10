@@ -1,0 +1,42 @@
+# Keep source code, presentation assets, and project configuration in Git.
+# Do not add extension-wide exclusions such as *.json: they hide project data.
+!/src/
+!/src/**
+!/static/
+!/static/**
+!/assets/
+!/assets/**
+!/scripts/
+!/scripts/**
+!/package.json
+!/package-lock.json
+!/vite.config.js
+!/readme.md
+
+# Installed dependencies and generated output
+/node_modules/
+/dist/
+/coverage/
+
+# Temporary recovery downloads, caches, and duplicate source snapshots
+/.recovery/
+/tmp/
+
+# Local IDE and editor files
+/.idea/
+/*.iml
+/.vscode/*
+!/.vscode/settings.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
+!/.vscode/extensions.json
+/.history/
+
+# Package-manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating-system files
+.DS_Store
+Thumbs.db

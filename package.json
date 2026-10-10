@@ -1,0 +1,25 @@
+{
+  "name": "three-js-presentation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "assets:optimize": "node scripts/optimize-textures.mjs",
+    "assets:check": "node scripts/check-textures.mjs",
+    "dev": "vite --port 8080",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 8080"
+  },
+  "dependencies": {
+    "lil-gui": "0.19.1",
+    "three": "0.158.0"
+  },
+  "devDependencies": {
+    "sharp": "0.35.5",
+    "vite": "8.3.4"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

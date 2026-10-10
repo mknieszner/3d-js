@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORPORATION Wars - CORPO - CHAPTER DEV</title>
+    <link rel="icon" type="image/x-icon" href="./import/favicon.ico">
+    <script src="./assets/simplex-noise.min.js"></script>
+    <script type="module" src="./script.js"></script>
+</head>
+<body>
+<canvas class="webgl"></canvas>
+<div id="cover" class="cover">
+    <div id="loader" class="loader-container" role="status" aria-label="Ładowanie prezentacji">
+        <span class="loader-spinner" aria-hidden="true"></span>
+    </div>
+</div>
+<nav class="menu" aria-label="Nawigacja prezentacji">
+    <button type="button" class="menu_button menu_prev" aria-label="Poprzedni etap" onclick="window.animationPrev()">&lt;</button>
+    <button type="button" class="menu_button menu_next" aria-label="Następny etap" onclick="window.animationNext()">&gt;</button>
+</nav>
+<video id="zombie-video" preload="none" loop crossorigin="anonymous" playsinline style="display:none">
+    <source data-src="./video/zombie_collage.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+<video id="conflict-video" preload="none" loop crossorigin="anonymous" playsinline style="display:none">
+    <source data-src="./video/conflict_collage.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+<video id="congrats-video" preload="none" crossorigin="anonymous" playsinline style="display:none">
+    <source data-src="./video/congrats.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+</body>
+</html>

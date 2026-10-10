@@ -1,0 +1,53 @@
+@font-face {
+    font-family: CorpoFont;
+    src: url('./import/kenpixel.woff') format('woff'),
+         url('./import/kenpixel.ttf') format('truetype');
+}
+
+* { margin: 0; padding: 0; }
+html, body { overflow: hidden; position: relative; font-family: CorpoFont; font-size: 16px; }
+.webgl { position: fixed; top: 0; left: 0; outline: none; }
+.menu { position: fixed; right: 20px; bottom: 20px; display: flex; align-items: center; gap: 8px; z-index: 1; }
+.menu_button {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 0;
+    color: #fff;
+    font: 32px/1 Arial, sans-serif;
+    opacity: 0.65;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: opacity 180ms ease, text-shadow 180ms ease;
+}
+.menu_button:hover, .menu_button:focus-visible {
+    opacity: 1;
+    text-shadow: 0 0 8px #ffffff80, 0 0 16px #ffffff40;
+}
+.menu_button:focus-visible { outline: none; }
+@media (prefers-reduced-motion: reduce) {
+    .menu_button { transition: none; }
+}
+.cover { background-color: #000; background-size: cover; position: fixed; left: 0; top: 0; width: 100%; z-index: 10; height: 100%; display: flex; align-items: center; justify-content: center; }
+.loader-container { display: flex; align-items: center; justify-content: center; }
+.loader-spinner {
+    width: 48px;
+    height: 48px;
+    border: 2px solid #ffffff26;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: loader-spin 900ms linear infinite;
+}
+@keyframes loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .loader-spinner { animation: none; }
+}
+.cover__text { color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.logo { font-size: 20px; }
+.sub-logo { font-size: 10px; }
+.sub-logo, .logo { margin: 10px; }
+.end-video { position: fixed; left: 0; top: 0; height: 100vh; width: 100vw; display: flex; background-color: #000; }
+.hidden { display: none; }

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mercury Redstone mr-1a Capsule
+* source:	https://sketchfab.com/3d-models/mercury-redstone-mr-1a-capsule-2cfd6fe9f30646d9897a53b86dfc1c54
+* author:	TomasLA (https://sketchfab.com/TomasLA)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mercury Redstone mr-1a Capsule" (https://sketchfab.com/3d-models/mercury-redstone-mr-1a-capsule-2cfd6fe9f30646d9897a53b86dfc1c54) by TomasLA (https://sketchfab.com/TomasLA) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
