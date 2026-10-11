@@ -33,6 +33,7 @@ import ScoreModel from "./scores/ScoreModel.js";
 import CongratulationsText from "./texts/CongratulationsText.js";
 import Intro from "./intro/Intro.js";
 import Debug from "../Utils/Debug.js";
+import StagePreloader from '../Utils/StagePreloader.js';
 
 export default class World {
     texts = [];
@@ -116,10 +117,19 @@ export default class World {
             this.intro = new Intro()
 
             this.environment = new Environment();
+            this.preloader = new StagePreloader(this.experiance, this.bridge.screenMessage);
+            this.ready = this.prepare();
         })
     }
 
+    async prepare() {
+        await this.preloader.prepare();
+        await this.experiance.renderer.prepare([this.bridge.group, this.scoreModel.group]);
+        this.isReady = true;
+    }
+
     update() {
+        if (!this.isReady) return;
         this.mainNucleus?.update();
         this.redNucleus?.update();
         this.greenNucleus?.update();

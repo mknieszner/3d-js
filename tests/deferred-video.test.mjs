@@ -43,7 +43,7 @@ test('initial HTML defers every movie and uses a CSS loader', async () => {
     assert.match(html, /class="loader-spinner"/);
 });
 
-test('movies stay unloaded until their stage and reuse their source on return', () => {
+test('unprepared movies load on demand and reuse their source on return', () => {
     const {plane, videos} = fixture();
     const select = video => {
         plane.experiance.config.stage.description.video = video;
@@ -66,6 +66,37 @@ test('movies stay unloaded until their stage and reuse their source on return', 
     assert.equal(videos['zombie-video'].loads, 1);
     assert.equal(videos['zombie-video'].plays, 2);
     assert.equal(videos['congrats-video'].loads, 0);
+});
+
+test('the nearest upcoming movie loads before its stage without playback, including after a direct link', () => {
+    const {plane, videos} = fixture();
+    const steps = [
+        {description: {video: {on: false}}},
+        {description: {video: {on: false}}},
+        {description: {video: {on: true, name: 'zombie-video'}}},
+        {description: {video: {on: false}}},
+        {description: {video: {on: true, name: 'conflict-video'}}},
+    ];
+    Object.assign(plane.experiance.config, {steps, step: 0, stage: steps[0]});
+    plane.setConfig();
+    assert.equal(videos['zombie-video'].loads, 1);
+    assert.equal(videos['zombie-video'].preload, 'auto');
+    assert(Object.values(videos).every(video => video.plays === 0));
+    assert.equal(videos['conflict-video'].loads, 0);
+
+    Object.assign(plane.experiance.config, {step: 2, stage: steps[2]});
+    plane.setConfig();
+    assert.equal(videos['zombie-video'].loads, 1);
+    assert.equal(videos['zombie-video'].plays, 1);
+    assert.equal(videos['conflict-video'].loads, 1);
+    assert.equal(videos['conflict-video'].plays, 0);
+    assert.equal(videos['congrats-video'].loads, 0);
+
+    const direct = fixture();
+    Object.assign(direct.plane.experiance.config, {steps, step: 3, stage: steps[3]});
+    direct.plane.setConfig();
+    assert.equal(direct.videos['zombie-video'].loads, 0);
+    assert.equal(direct.videos['conflict-video'].loads, 1);
 });
 
 test('aborted playback and browser autoplay restrictions are handled', async () => {

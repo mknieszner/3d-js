@@ -266,12 +266,30 @@ aplikacji, łącząc przezroczystą powierzchnię z warstwą wireframe.
 
 `VideoPlane` zamienia element HTML `video` w `THREE.VideoTexture`
 i nakłada go na geometrię w scenie. Elementy wideo początkowo mają
-`preload="none"` i `data-src`. Źródło jest aktywowane dopiero przy wejściu
-w odpowiedni etap. Zmiana etapu zatrzymuje pozostałe filmy; ponowne wejście
-zachowuje przypisane źródło. Przy blokadzie autoplay odtwarzanie jest ponawiane
+`preload="none"` i `data-src`. Po załadowaniu zasobów 3D najbliższy przyszły
+film otrzymuje źródło i `preload="auto"`, także gdy poprzedza go kilka etapów
+bez wideo. Wejście w film przygotowuje następny film, bez uruchamiania go.
+Zmiana etapu zatrzymuje pozostałe filmy; ponowne wejście zachowuje przypisane
+źródło i `VideoTexture`. Przy blokadzie autoplay odtwarzanie jest ponawiane
 po interakcji użytkownika.
 
 ## Zarządzanie zasobami i wydajność
+
+Ekran ładowania znika dopiero po przygotowaniu tekstur na GPU, kompilacji
+shaderów (również ukrytych modeli i wariantów oświetlenia kokpitu/wyników)
+oraz próbnym renderowaniu modeli do bufora poza ekranem. Nawigacja jest
+w tym czasie wstrzymana. Start może potrwać dłużej, ale pierwsze pokazanie
+modelu nie musi wykonywać tych operacji podczas przejścia.
+
+`StagePreloader` przygotowuje geometrię napisów i jej bufory na GPU dla dwóch następnych etapów,
+zachowując bieżący i jeden poprzedni. `GeometryCache` współdzieli geometrię
+identycznych napisów; zasoby poza tym oknem są zwalniane. Przygotowanie działa
+po jednym napisie w wolnym czasie przeglądarki (`requestIdleCallback`, z
+zastępczym `setTimeout`), a szybka nawigacja anuluje poprzednią kolejkę.
+Panele wyników są wykorzystywane ponownie, a niezmieniona konfiguracja
+nie przebudowuje wykresów. Bardzo szybkie przejścia mogą wyprzedzić kolejkę;
+wtedy potrzebny napis powstaje przy wejściu. Buforowanie filmów pozostaje
+w gestii przeglądarki i nie gwarantuje pobrania całego pliku przed odtwarzaniem.
 
 Zasoby mają oddzielną reprezentację źródłową i wykonawczą:
 
@@ -316,7 +334,8 @@ Koszt działania aplikacji zależy od kilku niezależnych mechanizmów:
 | `orbits.test.mjs` | Zgodność rysowanej trajektorii z pozycją obiektu, orientacja, tempo ruchu i widoczność. |
 | `camera-controls.test.mjs` | Włączanie ręcznego sterowania parametrem URL i działanie przejść kamery. |
 | `scenario-page.test.mjs` | Wybór etapu, granice nawigacji i niepoprawne parametry `page`. |
-| `deferred-video.test.mjs` | Odroczenie źródeł filmów, ponowne odtwarzanie i obsługa blokady autoplay. |
+| `deferred-video.test.mjs` | Wcześniejsze ładowanie najbliższego filmu, ponowne odtwarzanie i obsługa blokady autoplay. |
+| `stage-preloader.test.mjs` | Przygotowanie etapów, anulowanie kolejki, ograniczenie cache, współdzielenie geometrii i przygotowanie buforów GPU. |
 
 `assets:check` sprawdza zgodność geometrii, danych szkieletu i ścieżek animacji
 zasobów wykonawczych z plikami źródłowymi, używając rzeczywistego `FBXLoader`.

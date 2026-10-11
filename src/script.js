@@ -6,15 +6,15 @@ import Resources from "./Experience/Utils/Resources.js";
 window.scenario = new Scenario();
 
 window.animationPrev = () => {
-    window.scenario.prev()
+    if (window.experience?.world.isReady) window.scenario.prev()
 };
 
 window.animationNext = () => {
-    window.scenario.next()
+    if (window.experience?.world.isReady) window.scenario.next()
 };
 
 window.startPresentation = () => {
-    document.getElementById("cover")?.remove();
+    if (window.experience?.world.isReady) document.getElementById("cover")?.remove();
 };
 
 window.experience = new Experience(document.querySelector('canvas.webgl'));
@@ -28,8 +28,12 @@ document.addEventListener("keydown",function(e){
     }
 });
 
-experience.resources.on(Resources.READY_EVENT, () => {
-    setTimeout(() => {
+experience.resources.on(Resources.READY_EVENT, async () => {
+    try {
+        await experience.world.ready;
         document.getElementById("cover")?.remove();
-    }, 0)
+    } catch (error) {
+        console.error('Nie udało się przygotować prezentacji:', error);
+        document.getElementById('loader').textContent = 'Nie udało się przygotować prezentacji. Odśwież stronę.';
+    }
 });

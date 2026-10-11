@@ -1,7 +1,6 @@
 import Experience from "../../Experiance.js";
 import {RectangleRounded} from "../../Utils/RectangleRounded.js";
 import * as THREE from "three";
-import DisposeUtils from "../../Utils/Dispose.js";
 
 export default class ScoresPlane {
 
@@ -43,6 +42,6 @@ export default class ScoresPlane {
     }
 
     dispose() {
-        DisposeUtils.dispose(this.mesh)
+        this.mesh?.removeFromParent();
     }
 }

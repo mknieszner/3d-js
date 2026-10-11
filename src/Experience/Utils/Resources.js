@@ -4,6 +4,7 @@ import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
 import {Font, FontLoader} from "three/examples/jsm/loaders/FontLoader.js";
 import {TTFLoader} from "three/examples/jsm/loaders/TTFLoader.js";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader.js";
+import GeometryCache from './GeometryCache.js';
 
 export default class Resources extends EventEmitter {
     static READY_EVENT = 'ready'
@@ -11,6 +12,7 @@ export default class Resources extends EventEmitter {
     constructor(sources) {
         super();
         this.sources = sources;
+        this.geometryCache = new GeometryCache();
         this.items = {
             SFProText_font: undefined
         };

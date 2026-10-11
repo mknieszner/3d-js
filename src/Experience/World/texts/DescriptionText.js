@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {TextGeometry} from "three/examples/jsm/geometries/TextGeometry.js";
 import Scenario from "../../Scenario/Scenario.js";
 import {NeonColors} from "../models/Actor.js";
+import {textGeometryKey} from '../../Utils/GeometryCache.js';
 
 export default class DescriptionText {
     geometries = []
@@ -32,11 +33,13 @@ export default class DescriptionText {
 
         this.setConfig()
 
-        this.experiance.config.on(Scenario.CHAPTER_CHANGE, () => setTimeout(() => this.setConfig(), 100))
+        this.experiance.config.on(Scenario.CHAPTER_CHANGE, () => this.setConfig())
     }
 
     setConfig() {
-        this.content = [...this.experiance.config.stage[this.configName].content];
+        const content = this.experiance.config.stage[this.configName].content;
+        if (JSON.stringify(content) === JSON.stringify(this.content)) return;
+        this.content = [...content];
         this.color = this.experiance.config.stage[this.configName].color;
         this.setGeometry();
         this.setTextures();
@@ -94,9 +97,7 @@ export default class DescriptionText {
     }
 
     setMesh() {
-        if (this.geometries?.length) {
-            this.resetMeshes()
-        }
+        this.resetMeshes();
     }
 
     resetMeshes() {
@@ -119,23 +120,26 @@ export default class DescriptionText {
 
 
     generateGeometry(content, isBigger) {
-        const geometry = new TextGeometry(content, {
-            font: this.resources.items.kenpixel_ttf,
-            size: isBigger ? 1 : 0.6,
-            height: 0.1,
-            curveSegments: 12,
-            bevelEnabled: true,
-            bevelThickness: 0.01,
-            bevelSize: 0.02,
-            bevelOffset: 0,
-            bevelSegments: 5
-        })
-        geometry.computeBoundingBox()
-        geometry.translate(
-            -geometry.boundingBox.max.x * 0.5,
-            -geometry.boundingBox.max.y * 0.5,
-            -geometry.boundingBox.max.z * 0.5
-        )
-        return geometry;
+        const size = isBigger ? 1 : 0.6;
+        return this.resources.geometryCache.get(textGeometryKey('description', content, size), () => {
+            const geometry = new TextGeometry(content, {
+                font: this.resources.items.kenpixel_ttf,
+                size,
+                height: 0.1,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.01,
+                bevelSize: 0.02,
+                bevelOffset: 0,
+                bevelSegments: 5
+            })
+            geometry.computeBoundingBox()
+            geometry.translate(
+                -geometry.boundingBox.max.x * 0.5,
+                -geometry.boundingBox.max.y * 0.5,
+                -geometry.boundingBox.max.z * 0.5
+            )
+            return geometry;
+        });
     }
 }

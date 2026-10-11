@@ -164,19 +164,20 @@ export default class ScoreGraph {
     }
 
     dispose() {
-        this.group.remove(this.textMesh);
+        this.textMesh?.dispose();
         this.group.remove(this.redMesh);
         this.group.remove(this.orangeMesh);
         this.group.remove(this.yellowMesh);
         this.group.remove(this.greenMesh);
         this.group.remove(this.darkGreenMesh);
 
-        DisposeUtils.dispose(this.textMesh);
         DisposeUtils.dispose(this.redMesh);
         DisposeUtils.dispose(this.orangeMesh);
         DisposeUtils.dispose(this.yellowMesh);
         DisposeUtils.dispose(this.greenMesh);
         DisposeUtils.dispose(this.darkGreenMesh);
+        for (const material of [this.textMaterial, this.redMaterial, this.orangeMaterial,
+            this.yellowMaterial, this.greenMaterial, this.darkGreenMaterial]) material?.dispose();
 
         Experience.INSTANCE.scene.remove(this.group);
     }

@@ -7,6 +7,7 @@ import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 import {Vector2} from "three";
+import {nextPreparationTurn} from './Utils/StagePreloader.js';
 
 const defaultBloomParams = {
     threshold: 0,
@@ -39,6 +40,9 @@ export default class Renderer {
         this.instance.shadowMap.enabled = true
         this.instance.shadowMap.type = THREE.PCFSoftShadowMap
         this.instance.setClearColor('#211d20')
+        this.preparationScene = new THREE.Scene();
+        this.preparationTarget = new THREE.WebGLRenderTarget(1, 1);
+        this.preparationMaterial = new THREE.MeshBasicMaterial();
         this.resize();
 
         const renderPass = new RenderPass(this.scene, this.camera.instance);
@@ -77,6 +81,81 @@ export default class Renderer {
         this.instance.setSize(this.sizes.width, this.sizes.height)
         this.instance.setPixelRatio(this.sizes.pixelRatio)
         this.bloomComposer?.setSize(this.sizes.width, this.sizes.height)
+    }
+
+    async prepare(lightGroups = []) {
+        const textures = new Set();
+        const collect = value => { if (value?.isTexture && !value.isVideoTexture) textures.add(value); };
+        Object.values(this.experiance.resources.items).forEach(collect);
+        this.scene.traverse(object => {
+            for (const material of [object.material].flat()) {
+                if (material) Object.values(material).forEach(collect);
+            }
+        });
+        for (const texture of textures) {
+            await nextPreparationTurn();
+            this.instance.initTexture(texture);
+        }
+
+        const visibility = new Map();
+        this.scene.traverse(object => visibility.set(object, object.visible));
+        // Hidden meshes are also compiled by Three.js. Lights, however, are
+        // counted only when visible, so prepare each cockpit/score light variant.
+        for (let variant = 0; variant < 2 ** lightGroups.length; variant++) {
+            await nextPreparationTurn();
+            let normal, bloom;
+            try {
+                visibility.forEach((_, object) => { object.visible = true; });
+                lightGroups.forEach((group, index) => { group.visible = !!(variant & (1 << index)); });
+                normal = this.instance.compileAsync(this.scene, this.camera.instance);
+                this.scene.traverse(object => this.bloom.nonBloomed(object));
+                bloom = this.instance.compileAsync(this.scene, this.camera.instance);
+            } finally {
+                this.scene.traverse(object => this.bloom.restoreMaterial(object));
+                visibility.forEach((visible, object) => { object.visible = visible; });
+            }
+            await Promise.all([normal, bloom]);
+        }
+
+        // Upload buffers for hidden models without drawing them on the canvas.
+        const target = new THREE.WebGLRenderTarget(1, 1);
+        const previousTarget = this.instance.getRenderTarget();
+        const culling = new Map();
+        try {
+            visibility.forEach((_, object) => { object.visible = true; });
+            this.scene.traverse(object => {
+                culling.set(object, object.frustumCulled);
+                object.frustumCulled = false;
+            });
+            this.instance.setRenderTarget(target);
+            this.instance.render(this.scene, this.camera.instance);
+        } finally {
+            this.instance.setRenderTarget(previousTarget);
+            culling.forEach((value, object) => { object.frustumCulled = value; });
+            visibility.forEach((visible, object) => { object.visible = visible; });
+            target.dispose();
+        }
+        this.update();
+    }
+
+    prepareGeometry(geometry) {
+        const mesh = new THREE.Mesh(geometry, this.preparationMaterial);
+        mesh.frustumCulled = false;
+        this.preparationScene.add(mesh);
+        const target = this.instance.getRenderTarget();
+        try {
+            this.instance.setRenderTarget(this.preparationTarget);
+            this.instance.render(this.preparationScene, this.camera.instance);
+        } finally {
+            this.instance.setRenderTarget(target);
+            this.preparationScene.remove(mesh);
+        }
+    }
+
+    destroy() {
+        this.preparationMaterial.dispose();
+        this.preparationTarget.dispose();
+        this.instance.dispose();
     }
 
     update() {
@@ -126,7 +205,7 @@ class Bloom {
     }
 
     nonBloomed(obj) {
-        if (!obj.corpo_bloomed) {
+        if (obj.material && !obj.corpo_bloomed) {
             this.matertials[obj.uuid] = obj.material;
             obj.material = this.darkMaterial;
         }

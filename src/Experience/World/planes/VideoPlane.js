@@ -35,8 +35,10 @@ export default class VideoPlane {
     }
 
     setTextures(name) {
-        this.textures = {}
-        this.textures.color = new THREE.VideoTexture(this.getVideo(name || this.videoNames[0]));
+        this.videoTextures ??= new Map();
+        const id = name || this.videoNames[0];
+        if (!this.videoTextures.has(id)) this.videoTextures.set(id, new THREE.VideoTexture(this.getVideo(id)));
+        this.textures = {color: this.videoTextures.get(id)};
         this.textures.color.colorSpace = THREE.SRGBColorSpace
     }
 
@@ -74,13 +76,19 @@ export default class VideoPlane {
     }
 
     setConfig() {
+        const previousName = this.videoName;
+        const previousWidth = this.width;
+        const previousHeight = this.height;
         this.videoOn = this.experiance.config.stage.description.video.on;
         this.videoName = this.experiance.config.stage.description.video.name;
         this.width = this.experiance.config.stage.description.video.width;
         this.height = this.experiance.config.stage.description.video.height;
 
         this.pauseAll();
-        if(this.videoOn) {
+        if(this.videoOn && (previousName !== this.videoName || previousWidth !== this.width || previousHeight !== this.height)) {
+            this.geometry?.dispose();
+            this.borderGeometry?.dispose();
+            this.material?.dispose();
             this.setTextures(this.videoName);
             this.setGeometry(this.width, this.height);
             this.setMaterial();
@@ -88,6 +96,7 @@ export default class VideoPlane {
         }
 
         this.update()
+        this.preloadUpcoming();
     }
 
     update() {
@@ -107,11 +116,7 @@ export default class VideoPlane {
         const video = this.getVideo(this.videoName);
         if (!video) return;
 
-        const source = video.querySelector('source[data-src]');
-        if (source && !source.hasAttribute('src')) {
-            source.setAttribute('src', source.dataset.src);
-            video.load();
-        }
+        this.preload(this.videoName);
         // A fast chapter change may abort a pending play; direct links may also
         // require a user gesture before the browser permits sound.
         video.play()?.catch(error => {
@@ -156,6 +161,31 @@ export default class VideoPlane {
 
     getVideo(videoId) {
         return document.getElementById(videoId)
+    }
+
+    preload(videoId) {
+        const video = this.getVideo(videoId);
+        const source = video?.querySelector('source[data-src]');
+        if (source && !source.hasAttribute('src')) {
+            video.preload = 'auto';
+            source.setAttribute('src', source.dataset.src);
+            video.load();
+        }
+    }
+
+    preloadUpcoming() {
+        const scenario = this.experiance.config;
+        // Find the next different movie, even when several non-video stages precede it.
+        const next = scenario.steps?.slice(scenario.step + 1).find(stage => {
+            const video = stage.description?.video;
+            return video?.on && video.name !== (this.videoOn ? this.videoName : null);
+        });
+        if (next) this.preload(next.description.video.name);
+    }
+
+    destroy() {
+        this.pauseAll();
+        this.videoTextures?.forEach(texture => texture.dispose());
     }
 
     get videoNames() {

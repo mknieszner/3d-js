@@ -6,6 +6,7 @@ import Debug from "../Utils/Debug.js";
 const STEPS = SCORES_STEPS.concat(HISTORY_STEPS)
 
 export default class Scenario extends EventEmitter {
+    get steps() { return STEPS; }
     static CHAPTER_CHANGE = 'step_change'
     step = Debug.getPage(STEPS.length - 1);
     stage = STEPS[this.step]

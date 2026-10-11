@@ -52,10 +52,12 @@ export default class Experience {
         this.camera?.update();
         this.world?.update();
         this.raycaster?.update();
-        this.renderer?.update();
+        if (this.world?.isReady) this.renderer?.update();
     }
 
     destroy() {
+        this.world.preloader?.destroy();
+        this.world.video?.destroy();
         this.sizes.off(Sizes.RESIZE_EVENT)
         this.time.destroy()
 
@@ -75,7 +77,8 @@ export default class Experience {
             }
         })
         this.camera.controls.dispose();
-        this.renderer.instance.dispose();
+        this.resources.geometryCache.dispose();
+        this.renderer.destroy();
         if (this.debug.active) {
             this.debug.ui.destroy()
         }
